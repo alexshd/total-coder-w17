@@ -1,0 +1,29 @@
+# https://taskfile.dev
+
+version: "3"
+silent: true
+tasks:
+  default:
+    deps:
+      - test
+
+  test:
+    cmds:
+      - gotest -cover -race ./...
+
+  build:
+    cmds:
+      - go build -o ./bin/w17 .
+
+  run:
+    deps:
+      - build
+    cmds:
+      - bin/w17
+    silent: true
+
+  push:
+    cmds:
+      - git add .
+      - git commit
+      - git push
