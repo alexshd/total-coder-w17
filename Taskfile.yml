@@ -3,7 +3,6 @@
 version: "3"
 
 interval: 500ms
-# silent: true
 
 tasks:
   default:
@@ -15,9 +14,9 @@ tasks:
       - gotest -cover -race ./...
 
   build:
-    deps:
-      - tidy
     cmds:
+      - task: tidy
+      - task: test
       - go build -o ./bin/w17 .
 
   tidy:
@@ -27,10 +26,10 @@ tasks:
   run:
     desc: Watch and rebuild
     watch: true
-    sources: 
-      - '**/*.go'
+    sources:
+      - "**/*.go"
 
-    generates: 
+    generates:
       - ./bin/w17
     deps:
       - build
@@ -46,6 +45,6 @@ tasks:
   push:
     cmds:
       - task: commit
-      - task: build 
-      - task: test 
+      - task: build
+      - task: test
       - git push
