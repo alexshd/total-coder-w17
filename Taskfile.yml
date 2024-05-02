@@ -1,7 +1,9 @@
 # https://taskfile.dev
 
 version: "3"
+
 silent: true
+
 tasks:
   default:
     deps:
@@ -12,8 +14,14 @@ tasks:
       - gotest -cover -race ./...
 
   build:
+    deps:
+      - tidy
     cmds:
       - go build -o ./bin/w17 .
+
+  tidy:
+    cmds:
+      - go mod tidy
 
   run:
     deps:
@@ -22,8 +30,15 @@ tasks:
       - bin/w17
     silent: true
 
-  push:
+  commit:
     cmds:
       - git add .
       - git commit
+
+  push:
+    deps:
+      - commit
+      - build
+      - test
+    cmds:
       - git push
