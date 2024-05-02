@@ -2,7 +2,8 @@
 
 version: "3"
 
-silent: true
+interval: 500ms
+# silent: true
 
 tasks:
   default:
@@ -24,11 +25,18 @@ tasks:
       - go mod tidy
 
   run:
+    desc: Watch and rebuild
+    watch: true
+    sources: 
+      - '**/*.go'
+
+    generates: 
+      - ./bin/w17
     deps:
       - build
     cmds:
       - bin/w17
-    silent: true
+    silent: false
 
   commit:
     cmds:
@@ -36,9 +44,8 @@ tasks:
       - git commit
 
   push:
-    deps:
-      - commit
-      - build
-      - test
     cmds:
+      - task: commit
+      - task: build 
+      - task: test 
       - git push

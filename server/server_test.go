@@ -1,9 +1,9 @@
 package server
 
 import (
-	"log/slog"
+	"encoding/json"
+	"net/http"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -16,32 +16,26 @@ import (
 //	- endDate
 //	- minCount
 //	- maxCount
-type Counters struct {
-	startDate string `json:"start_date"`
-	endDate   string `json:"end_date"`
-	maxCount  int64  `json:"max_count"`
-	minCount  int64  `json:"min_count"`
-}
 
-func TestGETCount(t *testing.T) {
-	t.Run(" /count no payload", func(t *testing.T) {
+func TestCount(t *testing.T) {
+	t.Run("", func(t *testing.T) {
 		a := assert.New(t)
 
-		want := "la"
-
-		a.HTTPBodyContains(countHandler, "GET", "/count", nil, want)
+		for _, method := range []string{http.MethodGet, http.MethodPut, http.MethodDelete} {
+			t.Run(method, func(t *testing.T) {
+				a.HTTPRedirect(countHandler, method, "/count", nil)
+			})
+		}
 	})
 
 	t.Run("json play", func(t *testing.T) {
 		a := assert.New(t)
-		counter := Counters{
-			startDate: "2024-01-01",
-			endDate:   "2024-02-01",
-		}
 
-		payload := `{"start_date": "2024-01-01", "end_date": "2024-02-01"}`
-
-		a.JSONEq(`{"main": "line"}`, string(payload))
+		payload := []byte(`{"startDate": "2024-01-01", "endDate": "2024-02-01", "maxCount": 200, "minCount": 50}`)
+		var dat map[string]any
+		a.NoError(json.Unmarshal(payload, &dat))
+		a.Equal("2024-01-01", dat["startDate"])
+		a.HTTPStatusCode(countHandler, "POST", "/count", nil, http.StatusAccepted)
 	})
 }
 
@@ -62,11 +56,11 @@ func TestServerSuite(t *testing.T) {
 	suite.Run(t, new(ServerSuite))
 }
 
-func string2Time(timeStr string) time.Time {
-	theTime, err := time.Parse("2006-01-02", timeStr)
-	if err != nil {
-		slog.Error("time parse failed", err)
-	}
-
-	return theTime
-}
+// func string2Time(timeStr string) time.Time {
+// 	theTime, err := time.Parse("2006-01-02", timeStr)
+// 	if err != nil {
+// 		slog.Error("time parse failed", err)
+// 	}
+//
+// 	return theTime
+// }

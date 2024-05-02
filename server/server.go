@@ -5,14 +5,16 @@ import (
 	"net/http"
 )
 
+// countHandler for /count route, exepts POST only.
 func countHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
 		w.WriteHeader(http.StatusAccepted)
-		fmt.Fprint(w, "fetching data from source")
+		fmt.Fprint(w, "fetching data from sourdce")
 	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		w.Write([]byte(htmlErrorBody))
+		// TODO: make it move automaticly.
+		http.Redirect(w, r, "/count/doc", http.StatusMovedPermanently)
+
 	}
 }
 
@@ -20,32 +22,16 @@ func Run() error {
 	server := http.NewServeMux()
 
 	server.HandleFunc("/count", countHandler)
+	server.HandleFunc("/count/doc", countDocHandler)
+	server.HandleFunc("/", mainHandler)
+
 	return http.ListenAndServe(":5000", server)
 }
 
-var htmlErrorBody = `
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Your Friendly ERROR</title>
-  </head>
-  <body>
-      <h3 style="color: red;">
-      Wrong Method <br/>
-      <code>/count</code> accepts only <code>POST</code>
-    </h3>
-      <br/> 
-      <h2>Example:</h2>
-      <br/> 
-      <code>
-            $ curl -XPOST -H "Content-type: application/json" -d '{"start_date": "2024-01-01", "end_date": "2024-03-30"}' 'localhost:5000/count'
-      </code>
-      <br />
-      <code>
-            $ echo '{ "start_date": "2024-01-01", "end_date": "2024-03-20" }' | restish post :5000/count
-      </code>
-  </body>
-</html>
-      `
+func mainHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "Hello to All")
+}
+
+func countDocHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "I welcome you to the amazing Documentation Page :)")
+}
